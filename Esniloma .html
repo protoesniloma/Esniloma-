@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ESNILOMA | Tienda Premium</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --azul-premium: #0f172a;
+            --verde-confirmar: #22c55e;
+            --fondo-app: #f8fafc;
+            --tarjeta: #ffffff;
+            --texto-principal: #1e293b;
+            --texto-secundario: #64748b;
+            --accent: #3b82f6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --azul-premium: #38bdf8;
+                --fondo-app: #020617;
+                --tarjeta: #1e293b;
+                --texto-principal: #f1f5f9;
+                --texto-secundario: #94a3b8;
+            }
+        }
+
+        body { font-family: 'Outfit', sans-serif; background-color: #000; margin: 0; display: flex; justify-content: center; color: var(--texto-principal); overflow-x: hidden; }
+
+        .app-container {
+            width: 100%; max-width: 430px; background: var(--fondo-app); min-height: 100vh;
+            padding-bottom: 110px; position: relative;
+        }
+
+        /* BUSCADOR */
+        .top-nav {
+            background: var(--tarjeta); padding: 20px; position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .search-container {
+            background: rgba(0,0,0,0.05); border-radius: 18px; display: flex;
+            align-items: center; padding: 12px 15px; gap: 10px;
+        }
+        .search-container input { background: none; border: none; color: var(--texto-principal); width: 100%; outline: none; font-family: 'Outfit'; font-size: 16px; }
+
+        /* CATEGORÍAS */
+        .categories-nav { display: flex; gap: 15px; padding: 20px; overflow-x: auto; scrollbar-width: none; }
+        .categories-nav::-webkit-scrollbar { display: none; }
+        .cat-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 75px; cursor: pointer; }
+        .cat-icon { 
+            width: 60px; height: 60px; background: var(--tarjeta); border-radius: 22px; 
+            display: flex; align-items: center; justify-content: center; font-size: 24px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; color: var(--texto-secundario);
+        }
+        .cat-item.active .cat-icon { background: var(--azul-premium); color: white; transform: translateY(-5px); }
+        .cat-item span { font-size: 12px; font-weight: 600; }
+
+        /* PRODUCTOS */
+        .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
+        .card { 
+            background: var(--tarjeta); border-radius: 28px; padding: 15px; 
+            position: relative; transition: 0.3s; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .card img { width: 100%; height: 100px; object-fit: contain; }
+        .card h3 { font-size: 14px; margin: 12px 0 4px; font-weight: 600; line-height: 1.2; height: 34px; overflow: hidden; }
+        .card .price { font-weight: 800; color: var(--azul-premium); font-size: 17px; margin: 5px 0; }
+        .add-btn { 
+            position: absolute; bottom: 15px; right: 15px; background: var(--azul-premium); 
+            color: white; border: none; width: 38px; height: 38px; border-radius: 14px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+
+        /* NAVEGACIÓN INFERIOR */
+        .bottom-nav {
+            position: fixed; bottom: 25px; width: 85%; max-width: 380px;
+            left: 50%; transform: translateX(-50%); background: var(--azul-premium);
+            border-radius: 25px; display: flex; justify-content: space-around; padding: 15px 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 1100;
+        }
+        .nav-link { font-size: 26px; color: rgba(255,255,255,0.5); cursor: pointer; transition: 0.3s; }
+        .nav-link.active { color: white; transform: scale(1.1); }
+
+        /* CARRITO */
+        #modal-carrito {
+            position: fixed; bottom: -100%; left: 0; width: 100%; height: 92%;
+            background: var(--tarjeta); z-index: 2000; transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top-left-radius: 35px; border-top-right-radius: 35px;
+            display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+        }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 1500; backdrop-filter: blur(5px); }
+        
+        .input-entrega { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 15px; border: 1px solid rgba(0,0,0,0.1); background: var(--fondo-app); font-family: 'Outfit'; font-size: 15px; box-sizing: border-box; color: var(--texto-principal); }
+        
+        /* SELECTOR PAGO */
+        .metodo-pago { display: flex; gap: 10px; margin: 15px 0; }
+        .opcion-pago { flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 15px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--texto-secundario); transition: 0.3s; }
+        .opcion-pago.active { border-color: var(--azul-premium); background: var(--azul-premium); color: white; }
+
+        /* FACTURA */
+        #factura-digital {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: white; width: 85%; max-width: 320px; padding: 25px; border-radius: 25px;
+            z-index: 3000; display: none; color: #333; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .factura-visible { display: block !important; animation: popFactura 0.4s forwards; }
+        @keyframes popFactura { to { transform: translate(-50%, -50%) scale(1); } }
+
+        /* ESTILO PARA EL QR */
+        #area-qr { margin: 15px auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        #qrcode img { border: 4px solid white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <nav class="top-nav">
+        <div class="search-container">
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" id="inputBusqueda" placeholder="Buscar en ESNILOMA..." oninput="ejecutarFiltros()">
+        </div>
+    </nav>
+
+    <div style="margin: 20px; padding: 25px; border-radius: 28px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; box-shadow: 0 10px 20px rgba(59,130,246,0.2);">
+        <h2 id="saludo-titulo" style="margin:0; font-size:24px; font-weight:800;">ESNILOMA ✨</h2>
+        <p id="sub-saludo" style="margin:5px 0 0; opacity:0.9; font-size:14px;">Calidad y frescura en tu puerta.</p>
+    </div>
+
+    <section class="categories-nav">
+        <div class="cat-item active" onclick="seleccionarCategoria('todos', this)">
+            <div class="cat-icon"><ion-icon name="grid-outline"></ion-icon></div>
+            <span>Todo</span>
+        </div>
+        <div class="cat-item" onclick="seleccionarCategoria('carnes', this)">
+            <div class="cat-icon"><ion-icon name="restaurant-outline"></ion-icon></div>
+            <span>Carnes</span>
+        </div>
+        <div class="cat-item" onclick="seleccionarCategoria('lacteos', this)">
+            <div class="cat-icon"><ion-icon name="water-outline"></ion-icon></div>
+            <span>Lácteos</span>
+        </div>
+        <div class="cat-item" onclick="seleccionarCategoria('despensa', this)">
+            <div class="cat-icon"><ion-icon name="fast-food-outline"></ion-icon></div>
+            <span>Despensa</span>
+        </div>
+        <div class="cat-item" onclick="seleccionarCategoria('aseo', this)">
+            <div class="cat-icon"><ion-icon name="sparkles-outline"></ion-icon></div>
+            <span>Aseo</span>
+        </div>
+        <div class="cat-item" onclick="seleccionarCategoria('bebidas', this)">
+            <div class="cat-icon"><ion-icon name="wine-outline"></ion-icon></div>
+            <span>Bebidas</span>
+        </div>
+    </section>
+
+    <main class="products-grid" id="grid-productos"></main>
+
+    <nav class="bottom-nav">
+        <div class="nav-link active" onclick="cerrarCarrito()"><ion-icon name="home-sharp"></ion-icon></div>
+        <div class="nav-link" onclick="abrirCarrito()" style="position: relative;">
+            <ion-icon name="bag-handle-sharp"></ion-icon>
+            <span id="cart-count" style="position: absolute; top:-5px; right:-10px; background:var(--verde-confirmar); color:white; font-size:10px; padding:3px 7px; border-radius:10px; display:none; font-weight:800;">0</span>
+        </div>
+        <div class="nav-link"><ion-icon name="person-circle-sharp"></ion-icon></div>
+    </nav>
+</div>
+
+<div id="overlay" onclick="cerrarCarrito()"></div>
+<div id="modal-carrito">
+    <div style="width: 50px; height: 5px; background: #cbd5e1; border-radius: 10px; margin: 15px auto;"></div>
+    
+    <div style="padding: 0 25px; flex-grow: 1; overflow-y: auto;">
+        <h2 style="font-weight: 800; font-size: 26px; margin-bottom: 20px;">Mi Pedido</h2>
+        <div id="lista-items"></div>
+        
+        <h3 style="margin-top: 30px; font-size: 16px;">¿Cómo pagarás?</h3>
+        <div class="metodo-pago">
+            <div class="opcion-pago active" id="btn-efectivo" onclick="seleccionarPago('Efectivo')">
+                <ion-icon name="cash-outline" style="font-size:20px"></ion-icon><br>Efectivo
+            </div>
+            <div class="opcion-pago" id="btn-transferencia" onclick="seleccionarPago('Transferencia')">
+                <ion-icon name="phone-portrait-outline" style="font-size:20px"></ion-icon><br>Transferencia
+            </div>
+        </div>
+
+        <div id="section-vuelto">
+            <input type="number" id="pago-con" class="input-entrega" placeholder="¿Con cuánto pagas? (Para el vuelto)">
+        </div>
+
+        <h3 style="margin-top: 20px; font-size: 16px;">Datos de Entrega</h3>
+        <input type="text" id="nombre-cliente" class="input-entrega" placeholder="Tu Nombre Completo">
+        
+        <button style="width:100%; padding:15px; border-radius:15px; border:none; background:#e2e8f0; color:var(--azul-premium); font-weight:700; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px;" onclick="obtenerUbicacion()">
+            <ion-icon name="location-sharp"></ion-icon> <span id="txt-ub">Compartir Ubicación GPS</span>
+        </button>
+        
+        <input type="text" id="direccion-cliente" class="input-entrega" placeholder="Dirección / Barrio / Apto">
+    </div>
+    
+    <div style="padding: 25px; background: var(--tarjeta); border-top: 1px solid rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <span style="color:var(--texto-secundario); font-weight:600;">Total a pagar:</span>
+            <span id="total-monto" style="font-size:32px; font-weight:800; color:var(--azul-premium); letter-spacing:-1px;">$0</span>
+        </div>
+        <button onclick="enviarWhatsApp()" style="width:100%; background:var(--verde-confirmar); color:white; border:none; padding:20px; border-radius:22px; font-weight:800; font-size:18px; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);">
+            <ion-icon name="logo-whatsapp" style="font-size:24px;"></ion-icon> Confirmar por WhatsApp
+        </button>
+    </div>
+</div>
+
+<div id="factura-digital">
+    <div style="text-align: center;">
+        <div style="width:60px; height:60px; background:var(--verde-confirmar); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 15px; font-size:30px;">
+            <ion-icon name="checkmark-sharp"></ion-icon>
+        </div>
+        <h2 style="margin:0; font-size:20px;">¡Gracias por tu compra!</h2>
+        <p style="font-size:12px; color:#666; margin-top:5px;">Tu pedido ya está en camino.</p>
+    </div>
+    <div id="ticket-info" style="margin: 20px 0; font-size:13px; background:#f8fafc; padding:15px; border-radius:15px; border: 1px dashed #cbd5e1; line-height:1.6;"></div>
+    
+    <div id="area-qr">
+        <div id="qrcode"></div>
+        <span style="font-size: 10px; color: #888;">Escanea para compartir la App</span>
+    </div>
+
+    <button onclick="location.reload()" style="width:100%; padding:15px; border:none; background:var(--azul-premium); color:white; border-radius:15px; font-weight:800; cursor:pointer;">Cerrar Factura</button>
+</div>
+
+<script>
+    const productos = [
+        { nombre: "Pechuga de Pollo x 500g", precio: 14500, cat: "carnes", img: "https://cdn-icons-png.flaticon.com/512/3143/3143636.png" },
+        { nombre: "Carne Molida de Res", precio: 18000, cat: "carnes", img: "https://cdn-icons-png.flaticon.com/512/3143/3143643.png" },
+        { nombre: "Leche Entera 1 Litro", precio: 4200, cat: "lacteos", img: "https://cdn-icons-png.flaticon.com/512/869/869612.png" },
+        { nombre: "Queso Mozzarella", precio: 9500, cat: "lacteos", img: "https://cdn-icons-png.flaticon.com/512/262/262557.png" },
+        { nombre: "Arroz Premium 1kg", precio: 5200, cat: "despensa", img: "https://cdn-icons-png.flaticon.com/512/2619/2619556.png" },
+        { nombre: "Aceite Vegetal 900ml", precio: 12500, cat: "despensa", img: "https://cdn-icons-png.flaticon.com/512/3076/3076045.png" },
+        { nombre: "Detergente Líquido", precio: 15900, cat: "aseo", img: "https://cdn-icons-png.flaticon.com/512/2553/2553642.png" },
+        { nombre: "Papel Higiénico x4", precio: 8500, cat: "aseo", img: "https://cdn-icons-png.flaticon.com/512/2553/2553655.png" },
+        { nombre: "Coca-Cola 1.5L", precio: 6500, cat: "bebidas", img: "https://cdn-icons-png.flaticon.com/512/2405/2405479.png" },
+        { nombre: "Jugo de Naranja Natural", precio: 7200, cat: "bebidas", img: "https://cdn-icons-png.flaticon.com/512/2405/2405456.png" }
+    ];
+
+    let carrito = JSON.parse(localStorage.getItem('esniloma_cart')) || [];
+    let categoriaActual = 'todos';
+    let metodoPago = 'Efectivo';
+    let gpsURL = "";
+
+    window.onload = function() {
+        const nombreGuardado = localStorage.getItem('esniloma_nombre');
+        const direccionGuardada = localStorage.getItem('esniloma_direccion');
+        
+        if(nombreGuardado) {
+            document.getElementById('nombre-cliente').value = nombreGuardado;
+            document.getElementById('saludo-titulo').innerText = `¡Hola, ${nombreGuardado.split(' ')[0]}! 👋`;
+            document.getElementById('sub-saludo').innerText = "Qué bueno verte de nuevo en ESNILOMA.";
+        }
+        if(direccionGuardada) {
+            document.getElementById('direccion-cliente').value = direccionGuardada;
+        }
+        renderizar(productos);
+    };
+
+    function renderizar(lista) {
+        const grid = document.getElementById('grid-productos');
+        grid.innerHTML = lista.map(p => `
+            <div class="card">
+                <img src="${p.img}">
+                <h3>${p.nombre}</h3>
+                <p class="price">$${p.precio.toLocaleString('es-CO')}</p>
+                <button class="add-btn" onclick="agregar('${p.nombre}')"><ion-icon name="add"></ion-icon></button>
+            </div>
+        `).join('');
+        actualizarContador();
+    }
+
+    function agregar(nombre) {
+        const p = productos.find(x => x.nombre === nombre);
+        const item = carrito.find(x => x.nombre === nombre);
+        if(item) item.cantidad++; else carrito.push({...p, cantidad: 1});
+        actualizarContador();
+        localStorage.setItem('esniloma_cart', JSON.stringify(carrito));
+    }
+
+    function actualizarContador() {
+        const totalItems = carrito.reduce((acc, i) => acc + i.cantidad, 0);
+        const el = document.getElementById('cart-count');
+        el.innerText = totalItems;
+        el.style.display = totalItems > 0 ? 'block' : 'none';
+    }
+
+    function seleccionarPago(m) {
+        metodoPago = m;
+        document.getElementById('btn-efectivo').classList.toggle('active', m==='Efectivo');
+        document.getElementById('btn-transferencia').classList.toggle('active', m==='Transferencia');
+        document.getElementById('section-vuelto').style.display = m==='Efectivo' ? 'block' : 'none';
+    }
+
+    function obtenerUbicacion() {
+        if (navigator.geolocation) {
+            document.getElementById('txt-ub').innerText = "Localizando...";
+            navigator.geolocation.getCurrentPosition(pos => {
+                // CORRECCIÓN: Uso correcto de backticks para la URL
+                gpsURL = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                document.getElementById('txt-ub').innerText = "✅ Ubicación Guardada";
+            }, () => {
+                document.getElementById('txt-ub').innerText = "❌ Error al localizar";
+            });
+        }
+    }
+
+    function abrirCarrito() {
+        document.getElementById('modal-carrito').style.bottom = '0';
+        document.getElementById('overlay').style.display = 'block';
+        const lista = document.getElementById('lista-items');
+        let total = 0;
+        
+        if(carrito.length === 0) {
+            lista.innerHTML = `<p style="text-align:center; padding:30px; color:gray;">Carrito vacío</p>`;
+        } else {
+            lista.innerHTML = carrito.map((item, i) => {
+                total += (item.precio * item.cantidad);
+                return `<div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                    <img src="${item.img}" width="40">
+                    <div style="flex-grow:1">
+                        <div style="font-weight:600; font-size:14px;">${item.nombre}</div>
+                        <div style="color:var(--azul-premium); font-weight:800;">${item.cantidad}x $${item.precio.toLocaleString()}</div>
+                    </div>
+                    <button onclick="eliminar(${i})" style="border:none; background:#fee2e2; color:#ef4444; padding:8px; border-radius:10px;"><ion-icon name="trash"></ion-icon></button>
+                </div>`;
+            }).join('');
+        }
+        document.getElementById('total-monto').innerText = `$${total.toLocaleString('es-CO')}`;
+    }
+
+    function eliminar(i) { carrito.splice(i, 1); localStorage.setItem('esniloma_cart', JSON.stringify(carrito)); abrirCarrito(); actualizarContador(); }
+    function cerrarCarrito() { document.getElementById('modal-carrito').style.bottom = '-100%'; document.getElementById('overlay').style.display = 'none'; }
+
+    function enviarWhatsApp() {
+        const nombre = document.getElementById('nombre-cliente').value;
+        const pagoCon = document.getElementById('pago-con').value;
+        const direccion = document.getElementById('direccion-cliente').value;
+        const totalTexto = document.getElementById('total-monto').innerText;
+        const totalNum = carrito.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
+        
+        if(!nombre || carrito.length === 0) return alert("Por favor completa tu nombre y añade productos.");
+
+        localStorage.setItem('esniloma_nombre', nombre);
+        localStorage.setItem('esniloma_direccion', direccion);
+
+        // CORRECCIÓN: Generación de QR limpia
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), {
+            text: window.location.href, 
+            width: 128,
+            height: 128,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        let vueltoMsg = "";
+        let vueltoTicket = "";
+        if(metodoPago === 'Efectivo' && pagoCon) {
+            let diferencia = parseFloat(pagoCon) - totalNum;
+            if(diferencia >= 0) {
+                vueltoMsg = `%0A💰 *Vuelto:* $${diferencia.toLocaleString('es-CO')}`;
+                vueltoTicket = `<br><strong>Vuelto:</strong> $${diferencia.toLocaleString('es-CO')}`;
+            }
+        }
+
+        let msg = `*ESNILOMA - NUEVO PEDIDO*%0A`;
+        msg += `👤 *Cliente:* ${nombre}%0A`;
+        msg += `💳 *Método:* ${metodoPago}%0A`;
+        if(metodoPago === 'Efectivo' && pagoCon) msg += `💵 *Paga con:* $${parseFloat(pagoCon).toLocaleString('es-CO')}${vueltoMsg}%0A`;
+        if(gpsURL) msg += `📍 *Ubicación:* ${gpsURL}%0A`;
+        msg += `🏠 *Dirección:* ${direccion}%0A%0A`;
+        msg += `*PRODUCTOS:*%0A`;
+        carrito.forEach(i => msg += `- ${i.cantidad}x ${i.nombre}%0A`);
+        msg += `%0A💰 *TOTAL: ${totalTexto}*`;
+
+        let htmlTicket = `<strong>Cliente:</strong> ${nombre}<br><strong>Pago:</strong> ${metodoPago}<br>`;
+        if(metodoPago === 'Efectivo' && pagoCon) htmlTicket += `<strong>Paga con:</strong> $${parseFloat(pagoCon).toLocaleString('es-CO')}${vueltoTicket}<br>`;
+        htmlTicket += `<strong>Total:</strong> ${totalTexto}<hr>`;
+        carrito.forEach(i => htmlTicket += `• ${i.cantidad}x ${i.nombre}<br>`);
+        document.getElementById('ticket-info').innerHTML = htmlTicket;
+
+        // Abrir WhatsApp en nueva pestaña
+        window.open(`https://wa.me/18097600364?text=${msg}`, '_blank');
+        
+        cerrarCarrito();
+        localStorage.removeItem('esniloma_cart');
+        carrito = [];
+        actualizarContador();
+        document.getElementById('factura-digital').classList.add('factura-visible');
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function seleccionarCategoria(cat, el) {
+        document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        categoriaActual = cat;
+        ejecutarFiltros();
+    }
+
+    function ejecutarFiltros() {
+        const b = document.getElementById('inputBusqueda').value.toLowerCase();
+        const f = productos.filter(p => (categoriaActual === 'todos' || p.cat === categoriaActual) && p.nombre.toLowerCase().includes(b));
+        renderizar(f);
+    }
+</script>
+</body>
+</html>
